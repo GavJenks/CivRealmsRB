@@ -12,12 +12,20 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.material.MaterialData;
+import org.bukkit.material.Crops;
+import org.bukkit.CropState;
+import org.bukkit.ChatColor;
 import com.untamedears.realisticbiomes.GrowthConfig;
 import com.untamedears.realisticbiomes.GrowthMap;
 import com.untamedears.realisticbiomes.RealisticBiomes;
 import com.untamedears.realisticbiomes.persist.Plant;
 import com.untamedears.realisticbiomes.utils.Fruits;
 import com.untamedears.realisticbiomes.utils.MaterialAliases;
+import java.util.ArrayList;
 
 public class PlayerListener implements Listener {
 	
@@ -25,15 +33,90 @@ public class PlayerListener implements Listener {
 	
 	private RealisticBiomes plugin;
 	
-	
-	
-	
 	private GrowthMap growthConfigs;
 	
 	public PlayerListener(RealisticBiomes plugin, GrowthMap growthConfigs) {
 		this.plugin = plugin;
 		this.growthConfigs = growthConfigs;
 	}
+		
+	@EventHandler(ignoreCancelled = true)
+	public void onBlockBreak(BlockBreakEvent event){
+		Block block = event.getBlock();
+		Material type = block.getType();
+		MaterialData md = block.getState().getData();
+		if(type.isSolid() == false){
+			if(type.equals(Material.CROPS)){
+				if(((Crops) md).getState() == CropState.RIPE){
+					event.setCancelled(true);
+					cropDrop(block, Material.SEEDS, true, true);
+					cropDrop(block, Material.WHEAT, false, true);
+					block.setType(Material.AIR);
+				}
+				return;
+			} else if(type.equals(Material.BEETROOT_BLOCK)){ 
+				if(((Crops) md).getState() == CropState.RIPE){
+					event.setCancelled(true);
+					cropDrop(block, Material.BEETROOT_SEEDS, true, true);
+					cropDrop(block, Material.BEETROOT, false, true);
+					block.setType(Material.AIR);
+				}
+				return;
+			} else if(type.equals(Material.CARROT)){
+				if(((Crops) md).getState() == CropState.RIPE){
+					event.setCancelled(true);
+					cropDrop(block, Material.CARROT_ITEM, true, false);
+					block.setType(Material.AIR);
+				}
+				return;
+			} else if(type.equals(Material.POTATO)){
+				if(((Crops) md).getState() == CropState.RIPE){
+					event.setCancelled(true);
+					cropDrop(block, Material.POTATO_ITEM, true, false);
+					block.setType(Material.AIR);
+				}
+				return;
+			} else if(type.equals(Material.NETHER_WARTS)){
+				if(block.getData() == 3){
+					event.setCancelled(true);
+					cropDrop(block, Material.NETHER_WARTS, true, false);
+					block.setType(Material.AIR);
+				}
+				return;
+			} else if(type.equals(Material.COCOA)){
+				if(block.getData() > 7 && block.getData() < 12){
+					event.setCancelled(true);
+					cropDrop(block, Material.INK_SACK, true, false);
+					block.setType(Material.AIR);
+				}
+			}
+		}
+	}
+	
+	private void cropDrop(Block block, Material materialToDrop, boolean isSeed, boolean isTwoComponent){
+		//I'm lazy so I'm hardcoding the base rates as 1.2 seeds after replant, and 1.2 of the desired crop (only counts once if seed = desired crop). So wheat would give 1.5 seeds on avg and 0.5 wheat. Carrots would give 1.5 carrots
+		double biomeMultiplier = plugin.materialGrowth.get(block.getType()).getBiomeMultiplier(block.getBiome()); //nullpointerexception
+		double surplusAvg = 1.2*(biomeMultiplier);
+		int numToDrop = (int)surplusAvg; //integer portion
+		if (Math.random() < surplusAvg - numToDrop){
+			numToDrop++; //so if avg surplus is 7.1, it will always give you 7, and 10% of the time give you another one too.
+		}
+		if(isSeed){numToDrop++;} //one more for the guaranteed seed, so 8.1 on average gives 7.1 surplus
+		ItemStack items;
+		if(materialToDrop.equals(Material.INK_SACK)){
+			items = new ItemStack(materialToDrop, numToDrop, (short)3);
+		} else {
+			items = new ItemStack(materialToDrop, numToDrop);
+		}
+        if(isSeed == false || isTwoComponent == false){
+			ItemMeta meta = items.getItemMeta();
+			ArrayList<String> lore = new ArrayList<String>(); //set lore to "Hand-Picked" only for fruits/vegetables themsleves, not dedicated seeds.
+			lore.add("Ripe, Hand-Picked");
+			meta.setLore(lore);
+			items.setItemMeta(meta);
+		}
+		block.getWorld().dropItemNaturally(block.getLocation(), items); 
+    }
 	
 	@EventHandler(ignoreCancelled = true)
 	public void onPlayerInteractEvent(PlayerInteractEvent event) {

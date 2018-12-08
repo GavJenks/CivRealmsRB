@@ -129,7 +129,6 @@ public class RealisticBiomes extends JavaPlugin {
 			}	
 		}
 	}
-	
 
 	public static void doLog(Level level, String message, Throwable wrong) {
 		

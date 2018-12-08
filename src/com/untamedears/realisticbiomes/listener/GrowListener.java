@@ -264,7 +264,7 @@ public class GrowListener implements Listener {
 		}
 		
 		if (growthConfig.getRate(block) > 0.0d) {
-			plugin.getPlantManager().addPlant(block, new Plant(0.0f, -1.0f));
+			plugin.getPlantManager().addPlant(block, new Plant(0.0f, -1.0f)); //!!!
 		} else {
 			block.getWorld().playEffect(block.getLocation(), Effect.VILLAGER_THUNDERCLOUD, 1, 4);
 		}

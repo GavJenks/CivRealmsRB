@@ -205,6 +205,10 @@ public class GrowthConfig {
 		return name;
 	}
 	
+	public double getBiomeMultiplier(Biome biome){
+		return biomeMultipliers.get(biome);
+	}
+	
 	public Type getType() {
 		return type;
 	}

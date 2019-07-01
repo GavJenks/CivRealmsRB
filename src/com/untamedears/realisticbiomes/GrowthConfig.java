@@ -337,7 +337,7 @@ public class GrowthConfig {
                     airForgivenessCount++;
                     continue;
                 }
-				if (newBlock == null || !newBlock.getType().equals(soilMaterial)) {
+				if (newBlock == null || !newBlock.getType().isSolid()) { // replaced ".equals(soilMaterial)" with ".isSolid()" July-1-19
 					break;
 				}
 				if (soilData != -1 && newBlock.getData() != soilData) {

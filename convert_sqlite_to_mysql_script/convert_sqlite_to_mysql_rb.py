@@ -254,8 +254,8 @@ def isSqliteType(dbLocationArg):
         tmpCursor = tmpConnection.cursor()
             
         try:
-            # try getting something from the master table
-            tmpCursor.execute('''select * from sqlite_master limit 1''')
+            # try getting something from the main table
+            tmpCursor.execute('''select * from sqlite_main limit 1''')
         except sqlite3.DatabaseError as e:
             tmpCursor.close()
             tmpConnection.close()
